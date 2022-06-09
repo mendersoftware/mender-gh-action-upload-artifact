@@ -1,0 +1,46 @@
+name: 'Upload Mender Artifact'
+description: 'Upload a mender artifact to a Mender server'
+inputs:
+  mender_pat:
+    description: 'personal access token for the Mender server account to be used'
+    required: true
+  mender_artifact:
+    description: 'path of the artifact to be uploaded, relative to GITHUB_WORKSPACE'
+    required: true
+  mender_uri:
+    description: 'URI for the Mender server'
+    required: false
+    default: 'https://hosted.mender.io'
+runs:
+  using: "composite"
+  steps:
+    - id: input_validation
+      shell: bash
+      run: |
+        ls ${GITHUB_WORKSPACE}/${{ inputs.mender_artifact }} > /dev/null
+        if [ ! -f $(which curl) ]; then
+          echo "ERROR: 'curl' is missing"
+          exit 1
+        fi
+    - id: upload_artifact
+      shell: bash
+      run: |
+        # Makes management 'upload artifact' API call to Mender server, using curl
+        # https://docs.mender.io/api/#management-api-deployments-upload-artifact
+        RESPONSE=$(curl -s -X POST ${{ inputs.mender_uri }}/api/management/v1/deployments/artifacts \
+          -H "Content-Type: multipart/form-data" \
+          -H "Accept: application/json" \
+          -H "Authorization: Bearer ${{ inputs.mender_pat }}" \
+          -F artifact=@${GITHUB_WORKSPACE}/${{ inputs.mender_artifact }})
+        if [[ ! -z "$RESPONSE" || "$RESPONSE" != "" ]]; then
+          if $(echo ${RESPONSE} | grep -q "An artifact with the same name has conflicting depends"); then
+            echo "WARN: artifact ${{ inputs.mender_artifact }} already exists on the server ${{ inputs.mender_uri }}, upload is skipped"
+            echo "Server's response: ${RESPONSE}"
+            exit 0
+          else
+            echo "ERROR: failed to upload artifact ${{ inputs.mender_artifact }} to ${{ inputs.mender_uri }}"
+            echo "Server's response: ${RESPONSE}"
+            exit 1
+          fi
+        fi
+        echo "INFO: artifact ${{ inputs.mender_artifact }} successfully uploaded to ${{ inputs.mender_uri }}"
