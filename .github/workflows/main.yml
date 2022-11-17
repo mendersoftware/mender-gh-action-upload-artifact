@@ -1,0 +1,14 @@
+on: [push]
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    name: Upload a dummy Mender artifact
+    steps:
+      - uses: actions/checkout@v3
+      - name: push artifact to hosted Mender
+        id: artifact
+        uses: ./
+        with:
+          mender_pat: ${{ secrets.MENDER_PERSONAL_ACCESS_TOKEN }}
+          mender_artifact: test/assets/simpledummy_1.0.mender
