@@ -1,14 +1,73 @@
-on: [push]
+name: Build and upload Mender Artifact
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  MENDER_SERVER_URL: https://hosted.mender.io           # Mender server URL
+  MENDER_ARTIFACT_NAME: artifact.mender                 # Mender artifact name
+  MENDER_RELEASE_NAME: change-the-world-to-better-v1.0  # Mender release name
+  ARTIFACTS_LIST_FILE_NAME: artifacts_list.json
 
 jobs:
   upload:
     runs-on: ubuntu-latest
-    name: Upload a dummy Mender artifact
+    # conrainer with pre-installed mender-artifact and mender-cli tools
+    container:
+      image: mendersoftware/mender-ci-tools:mender-master
+    name: Upload a dummy Mender Artifact
     steps:
+      # Checkout git repository
       - uses: actions/checkout@v3
-      - name: push artifact to hosted Mender
+      - name: Setup environment
+        run: |
+          apk add jq
+          if [[ -z "${{ secrets.MENDER_SERVER_ACCESS_TOKEN }}" || "${{ secrets.MENDER_SERVER_ACCESS_TOKEN }}" == "" ]]; then
+            echo "ERROR: MENDER_SERVER_ACCESS_TOKEN is empty."
+            exit 1
+          fi
+      # Creates Mender Artifact
+      - name: Create Mender Artifact
+        run: |
+          echo /home/root/.ssh > dest_dir
+          echo authorized_keys > filename
+          echo key > authorized_keys
+          mender-artifact write module-image \
+            -T single-file \
+            --device-type raspberrypi4 \
+            -o ${MENDER_ARTIFACT_NAME} \
+            -n ${MENDER_RELEASE_NAME} \
+            --software-name authorized_keys \
+            --software-version 1.0 \
+            -f dest_dir \
+            -f filename \
+            -f authorized_keys
+      - name: Upload Mender Artifact to Mender server
         id: artifact
         uses: ./
         with:
-          mender_pat: ${{ secrets.MENDER_PERSONAL_ACCESS_TOKEN }}
-          mender_artifact: test/assets/simpledummy_1.0.mender
+          mender_pat: ${{ secrets.MENDER_SERVER_ACCESS_TOKEN }}
+          mender_artifact: ${{ env.MENDER_ARTIFACT_NAME }}
+          mender_uri: ${{ env.MENDER_SERVER_URL }}
+      - name: Check if the artifact exists on the Mender server
+        run: |
+          curl -s -X GET ${MENDER_SERVER_URL}/api/management/v1/deployments/artifacts/list \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer ${{ secrets.MENDER_SERVER_ACCESS_TOKEN }}" > ${ARTIFACTS_LIST_FILE_NAME}
+          if ! cat ${ARTIFACTS_LIST_FILE_NAME} | jq '.[].name' | grep -q ${MENDER_RELEASE_NAME}; then
+            echo "ERROR: the artifact is missing on the server"
+            exit 1
+          fi
+      - name: Cleanup
+        if: always()
+        run: |
+          if [ -f ${ARTIFACTS_LIST_FILE_NAME} ]; then
+            artifact_id=$(cat ${ARTIFACTS_LIST_FILE_NAME} | jq ".[] | select(.name == \"${MENDER_RELEASE_NAME}\")" | jq -r '.id')
+            curl -X DELETE https://hosted.mender.io/api/management/v1/deployments/artifacts/${artifact_id} \
+              -H "Accept: application/json" \
+              -H "Authorization: Bearer ${{ secrets.MENDER_SERVER_ACCESS_TOKEN }}"
+          fi
+
