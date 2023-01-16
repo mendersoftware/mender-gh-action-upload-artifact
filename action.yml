@@ -1,5 +1,5 @@
 name: 'Upload Mender Artifact'
-description: 'Upload a mender artifact to a Mender server'
+description: 'Upload a Mender Artifact to a Mender server'
 inputs:
   mender_pat:
     description: 'personal access token for the Mender server account to be used'
