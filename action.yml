@@ -1,5 +1,8 @@
 name: 'Upload Mender Artifact'
 description: 'Upload a Mender Artifact to a Mender server'
+branding:
+  icon: "upload-cloud"
+  color: "white"
 inputs:
   mender_pat:
     description: 'personal access token for the Mender server account to be used'
