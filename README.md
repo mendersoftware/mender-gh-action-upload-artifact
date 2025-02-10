@@ -30,6 +30,12 @@ To start editing right away, open the repository on [Gitpod](https://gitpod.io):
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/TheYoctoJester/mender-push-artifact)
 
+### Other online IDEs:
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/TheYoctoJester/mender-push-artifact)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/TheYoctoJester/mender-push-artifact)
+[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/TheYoctoJester/mender-push-artifact)
+[![Open in Codeanywhere](https://codeanywhere.com/img/open-in-codeanywhere-btn.svg)](https://app.codeanywhere.com/#https://github.com/TheYoctoJester/mender-push-artifact)
+
 ## Connect with us
 
 * Join the [Mender Hub discussion forum](https://hub.mender.io)
