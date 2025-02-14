@@ -1,0 +1,55 @@
+version: 2
+updates:
+
+  - package-ecosystem: terraform
+    commit-message:
+      prefix: chore
+    directory: /terragrunt
+    schedule:
+      interval: monthly
+    reviewers:
+      - "mendersoftware/sre-dependabot-reviewers"
+
+  - package-ecosystem: gomod
+    commit-message:
+      prefix: chore
+    directories:
+      - /infra/kube-prometheus/vendor/github.com/prometheus/node_exporter/docs/node-mixin
+      - /infra/kube-prometheus/vendor/github.com/prometheus/prometheus/documentation/prometheus-mixin
+    schedule:
+      interval: monthly
+    groups:
+      golang-dependencies:
+        patterns:
+          - "*"
+    reviewers:
+      - "mendersoftware/sre-dependabot-reviewers"
+
+  - package-ecosystem: docker
+    commit-message:
+      prefix: chore
+    directories:
+      - /terragrunt/modules/newrelic-synthetics-monitor/docker-env
+      - /infra/kube-prometheus/vendor/github.com/ksonnet/ksonnet-lib
+    schedule:
+      interval: monthly
+    reviewers:
+      - "mendersoftware/sre-dependabot-reviewers"
+
+  - package-ecosystem: pip
+    commit-message:
+      prefix: chore
+    directory: /terragrunt/modules/ssm-notifications/lambdas/ssm_slack_notifier
+    schedule:
+      interval: monthly
+    reviewers:
+      - "mendersoftware/sre-dependabot-reviewers"
+
+  - package-ecosystem: npm
+    commit-message:
+      prefix: chore
+    directory: /terragrunt/modules/newrelic-synthetics-monitor/scripts/api
+    schedule:
+      interval: monthly
+    reviewers:
+      - "mendersoftware/sre-dependabot-reviewers"
