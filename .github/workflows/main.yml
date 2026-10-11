@@ -21,7 +21,7 @@ jobs:
     name: Upload a dummy Mender Artifact
     steps:
       # Checkout git repository
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
       - name: Setup environment
         shell: bash
         run: |
